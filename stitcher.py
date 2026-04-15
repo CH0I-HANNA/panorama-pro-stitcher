@@ -78,11 +78,6 @@ class PanoramaStitcher:
         self.save_debug      = save_debug
         self.verbose         = verbose
 
-        # 결과 저장용 내부 상태
-        self._debug_dir  = 'debug'
-        self._all_kp     = []
-        self._pairwise_H = []
-
     def _log(self, msg: str):
         if self.verbose:
             print(msg)
@@ -174,7 +169,6 @@ class PanoramaStitcher:
             all_kp.append(kp)
             all_desc.append(desc)
             self._log(f"  이미지 {i}: {len(kp)}개 키포인트 검출")
-        self._all_kp = all_kp
         return all_kp, all_desc
 
     def _match_and_estimate(
@@ -187,7 +181,7 @@ class PanoramaStitcher:
         pairwise_H = []
 
         if self.save_debug:
-            os.makedirs(self._debug_dir, exist_ok=True)
+            os.makedirs('debug', exist_ok=True)
 
         for i in range(len(images) - 1):
             self._log(f"  쌍 ({i}, {i+1}):")
@@ -222,11 +216,10 @@ class PanoramaStitcher:
                     images[i+1], all_kp[i+1],
                     good_matches, inlier_mask=mask,
                 )
-                path = os.path.join(self._debug_dir, f'match_{i}_{i+1}.jpg')
+                path = os.path.join('debug', f'match_{i}_{i+1}.jpg')
                 cv2.imwrite(path, vis)
                 self._log(f"    매칭 시각화 저장: {path}")
 
-        self._pairwise_H = pairwise_H
         return pairwise_H
 
     def _warp_all(
@@ -272,33 +265,3 @@ class PanoramaStitcher:
 
         return result
 
-
-# ──────────────────────────────────────────────
-# 편의 함수: 파일 경로 리스트로 직접 스티칭
-# ──────────────────────────────────────────────
-
-def stitch_from_paths(
-    image_paths: List[str],
-    **kwargs,
-) -> np.ndarray:
-    """
-    이미지 파일 경로 리스트를 받아 파노라마를 반환하는 편의 함수.
-
-    Parameters
-    ----------
-    image_paths : 이미지 파일 경로 리스트
-    **kwargs    : PanoramaStitcher 생성자 인수
-
-    Returns
-    -------
-    panorama : BGR 파노라마 이미지
-    """
-    images = []
-    for path in image_paths:
-        img = cv2.imread(path)
-        if img is None:
-            raise FileNotFoundError(f"이미지 로드 실패: {path}")
-        images.append(img)
-
-    stitcher = PanoramaStitcher(**kwargs)
-    return stitcher.stitch(images)

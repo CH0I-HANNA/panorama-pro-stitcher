@@ -48,7 +48,10 @@ def estimate_homography(
     H    : (3, 3) float64 호모그래피 행렬, 실패 시 None
     mask : (N, 1) uint8 인라이어 마스크, 실패 시 None
     """
-    MIN_MATCHES = 4  # 호모그래피 추정에 최소 4쌍 필요
+    MIN_MATCHES  = 10   # 호모그래피 추정에 최소 10쌍 필요 (4는 너무 적음)
+    MIN_INLIERS  = 10   # RANSAC 후 인라이어 최소 개수
+    MIN_INLIER_RATIO = 0.08  # 인라이어 비율 하한 (8% 미만이면 신뢰 불가)
+                             # 철망 등 반복 패턴은 비율이 낮아도 올바른 H일 수 있음
 
     if len(matches) < MIN_MATCHES:
         print(f"  [WARN] 매칭 수 부족: {len(matches)} < {MIN_MATCHES}")
@@ -75,6 +78,25 @@ def estimate_homography(
     n_total   = len(matches)
     ratio     = n_inliers / n_total if n_total > 0 else 0
     print(f"  매칭: {n_total}개 → 인라이어: {n_inliers}개 ({ratio:.1%})")
+
+    # 인라이어 수 / 비율 검증
+    if n_inliers < MIN_INLIERS:
+        print(f"  [WARN] 인라이어 부족: {n_inliers} < {MIN_INLIERS}")
+        return None, None
+    if ratio < MIN_INLIER_RATIO:
+        print(f"  [WARN] 인라이어 비율 낮음: {ratio:.1%} < {MIN_INLIER_RATIO:.0%}")
+        return None, None
+
+    # 변환 행렬 유효성 검사: 이미지 꼭짓점이 극단적으로 이동하는지 확인
+    # (사진 최대 크기의 10배 이상 벗어나면 degenerate H로 판단)
+    h_img, w_img = 3000, 4000  # 대략적 이미지 크기 (보수적 상한)
+    corners = np.float32([[0, 0], [w_img, 0], [w_img, h_img], [0, h_img]]).reshape(-1, 1, 2)
+    warped_corners = cv2.perspectiveTransform(corners, H)
+    if warped_corners is not None:
+        max_disp = np.max(np.abs(warped_corners - corners))
+        if max_disp > 10 * max(w_img, h_img):
+            print(f"  [WARN] 변환 행렬이 극단적 (max displacement={max_disp:.0f}px) → 호모그래피 기각")
+            return None, None
 
     return H, mask
 

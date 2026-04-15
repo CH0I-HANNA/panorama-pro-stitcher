@@ -32,6 +32,17 @@ import time
 import cv2
 import numpy as np
 
+
+def imread_unicode(path: str) -> np.ndarray:
+    """
+    한글·유니코드 경로에서도 이미지를 읽는다.
+    cv2.imread는 비ASCII 경로를 지원하지 않으므로
+    np.fromfile + cv2.imdecode 방식을 사용한다.
+    """
+    buf = np.fromfile(path, dtype=np.uint8)
+    img = cv2.imdecode(buf, cv2.IMREAD_COLOR)
+    return img
+
 from stitcher import PanoramaStitcher
 
 
@@ -58,7 +69,7 @@ def load_images_from_dir(directory: str) -> tuple:
 
     images = []
     for p in paths:
-        img = cv2.imread(p)
+        img = imread_unicode(p)
         if img is None:
             print(f"  [WARN] 로드 실패 (건너뜀): {p}")
             continue
@@ -191,7 +202,7 @@ def main():
         paths  = args.images
         images = []
         for p in paths:
-            img = cv2.imread(p)
+            img = imread_unicode(p)
             if img is None:
                 print(f"[ERROR] 이미지 로드 실패: {p}")
                 sys.exit(1)

@@ -89,19 +89,12 @@ def feathering_blend(
     masks  = [mk for _, mk in images_with_masks]
 
     h, w = images[0].shape[:2]
-    result     = np.zeros((h, w, 3), dtype=np.float64)
-    weight_sum = np.zeros((h, w, 1), dtype=np.float64)
+    result = np.zeros((h, w, 3), dtype=np.float64)
 
-    norm_weights = _compute_weight_maps(masks)
-
-    for img, w_map in zip(images, norm_weights):
-        w_3c = w_map[:, :, np.newaxis]  # (H, W, 1) → 브로드캐스팅용
-        result     += img.astype(np.float64) * w_3c
-        weight_sum += w_3c
-
-    # 유효 픽셀만 정규화 (weight_sum=0인 픽셀은 그대로 0)
-    valid = (weight_sum[..., 0] > 0)
-    result[valid] /= weight_sum[valid]
+    # _compute_weight_maps가 픽셀별 합이 1이 되도록 이미 정규화하므로
+    # 단순 가중 합산만으로 올바른 블렌딩 결과를 얻는다.
+    for img, w_map in zip(images, _compute_weight_maps(masks)):
+        result += img.astype(np.float64) * w_map[:, :, np.newaxis]
 
     return np.clip(result, 0, 255).astype(np.uint8)
 
