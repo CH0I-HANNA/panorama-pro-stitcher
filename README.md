@@ -100,7 +100,7 @@
 ```
 ---
 ## 📷 터미널 출력 스크린 샷
-
+<img width="375" height="789" alt="Image" src="https://github.com/user-attachments/assets/4832ec5e-1ce4-429f-adff-7cc54f5fd1ef" />
 ---
 
 ## 📂 폴더 구조
