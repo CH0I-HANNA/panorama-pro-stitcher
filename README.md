@@ -98,6 +98,8 @@
         ▼
   파노라마 이미지 저장 (output/panorama.jpg)
 ```
+---
+## 📷 터미널 출력 스크린 샷
 
 ---
 
@@ -140,13 +142,14 @@ Panorama-Pro-Stitcher/
 
 7장의 연속 촬영 이미지를 왼쪽부터 순서대로 입력합니다.
 
-| #1 | #2 | #3 | #4 |
-|:---:|:---:|:---:|:---:|
-| ![img1](images/image1.png) | ![img2](images/image2.png) | ![img3](images/image3.png) | ![img4](images/image4.png) |
-
-| #5 | #6 | #7 |
+| #1 | #2 | #3 |
 |:---:|:---:|:---:|
-| ![img5](images/image5.png) | ![img6](images/image6.png) | ![img7](images/image7.png) |
+| ![img1](images/image1.png) | ![img2](images/image2.png) | ![img3](images/image3.png) |
+
+| #4 | #5 | #6 | #7 |
+|:---:|:---:|:---:|:---:|
+| ![img4](images/image4.png) | ![img5](images/image5.png) | ![img6](images/image6.png) | ![img7](images/image7.png) |
+
 
 > 각 이미지는 약 30~50% 시야각이 겹치도록 촬영되어야 합니다.
 
